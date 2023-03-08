@@ -17,12 +17,14 @@ import (
 )
 
 type BlockchainInterface struct {
-	count int
+	count     int
+	endpoints []string
 }
 
 func NewBlockchainInterface() *BlockchainInterface {
 	return &BlockchainInterface{
-		count: 0,
+		count:     0,
+		endpoints: make([]string, 0),
 	}
 }
 
@@ -171,6 +173,25 @@ func addPremadeAccounts(builder *BlockchainBuilder, path string) error {
 	return nil
 }
 
+func (this *BlockchainInterface) extractUnusedEndpoints(view []string) string {
+	size := len(view)
+	for i := 0; i < size; i++ {
+		found := false
+		for j := 0; j < len(this.endpoints); j++ {
+			if view[i] == this.endpoints[j] {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			this.endpoints = append(this.endpoints, view[i])
+			return view[i]
+		}
+	}
+	return view[0]
+}
+
 func (this *BlockchainInterface) Client(
 	params map[string]string,
 	env, view []string,
@@ -186,10 +207,9 @@ func (this *BlockchainInterface) Client(
 	var err error
 
 	logger.Tracef("new client")
-	index := this.count % len(view)
-	this.count++
-	logger.Tracef("use endpoint '%s'", view[index])
-	client, err = ethclient.Dial("ws://" + view[index])
+	endpoint := this.extractUnusedEndpoints(view)
+	logger.Tracef("use endpoint '%s'", endpoint)
+	client, err = ethclient.Dial("ws://" + endpoint)
 	if err != nil {
 		return nil, err
 	}
