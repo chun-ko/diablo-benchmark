@@ -39,7 +39,7 @@ func buildSystemMap() map[string]core.BlockchainInterface {
 	return map[string]core.BlockchainInterface{
 		"algorand": &nalgorand.BlockchainInterface{},
 		"diem":     &ndiem.BlockchainInterface{},
-		"ethereum": &nethereum.BlockchainInterface{},
+		"ethereum": nethereum.NewBlockchainInterface(),
 		"solana":   &nsolana.BlockchainInterface{},
 		"mock":     &mock.BlockchainInterface{},
 	}
